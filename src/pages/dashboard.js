@@ -1,4 +1,3 @@
-// Dashboard Page
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 
@@ -32,13 +31,13 @@ function dashboard() {
     // }
   }, []);
   return (
-    <div>
+    <div className="min-h-screen flex flex-col justify-center items-center">
       {token ? (
         <>
           <p>
-            Welcome!
+            Welcome back!
           </p>
-          <p>Email</p>
+          <p>Name : </p>
         </>
       ) : (
         <p>Loading user data...</p>
