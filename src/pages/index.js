@@ -8,15 +8,19 @@ export default function Home() {
   const [token, setToken] = useState(null);
 
   useEffect(() => {
-    console.log("NEXT_PUBLIC_API_URL", process.env.NEXT_PUBLIC_API_URL);
+    let authToken;
+
     // Extract token from URL query parameters
     const urlParams = new URLSearchParams(window.location.search);
-    const authToken = urlParams.get("token");
-
-    if (authToken) {
+    if (urlParams.has("token")) {
+      authToken = urlParams.get("token");
       setToken(authToken);
       localStorage.setItem("authToken", authToken);
-      router.push("/dashboard"); // Redirect to dashboard after successful login
+      router.push("/dashboard");
+    } else {
+      // check from local storage
+      authToken = localStorage.getItem("authToken");
+      setToken(authToken);
     }
   }, []);
 
@@ -28,7 +32,7 @@ export default function Home() {
   const handleLogout = async () => {
     localStorage.removeItem("authToken");
     setToken(null);
-    window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/logout`;
+    window.location.href = window.location.href;
   };
 
   return (
@@ -57,15 +61,11 @@ export default function Home() {
         </>
       ) : (
         <>
-          <p>You are logged in!</p>
+          <p className="my-2">You are logged in!</p>
+
           <button
             onClick={handleLogout}
-            style={{
-              padding: "10px 20px",
-              marginTop: "20px",
-              cursor: "pointer",
-              fontSize: "16px",
-            }}
+            className="bg-red-500 text-light px-4 py-2 mt-4 rounded-md font-bold"
           >
             Logout
           </button>
