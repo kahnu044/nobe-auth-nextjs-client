@@ -1,49 +1,68 @@
 import React, { useState, useEffect } from "react";
+import { useRouter } from "next/router";
 import axios from "axios";
 
-function dashboard() {
+function Dashboard() {
+  const router = useRouter();
   const [user, setUser] = useState(null);
-  const [token, setToken] = useState(null);
 
-
+  // Helper function to clear local storage and redirect
+  const handleInvalidToken = () => {
+    localStorage.removeItem("authToken");
+    localStorage.removeItem("authUser");
+    router.replace("/");
+  };
 
   useEffect(() => {
     const token = localStorage.getItem("authToken");
-    if(token){
-        setToken(token);
+    if (!token) {
+      handleInvalidToken();
+      return;
     }
 
-    // if (token) {
-    //   axios
-    //     .get("http://auth.example.com/validate", {
-    //       headers: { Authorization: `Bearer ${token}` },
-    //     })
-    //     .then((response) => {
-    //       setUser(response.data.user);
-    //     })
-    //     .catch((err) => {
-    //       console.error("Invalid token:", err);
-    //       localStorage.removeItem("authToken");
-    //       window.location.href = "/";
-    //     });
-    // } else {
-    //   window.location.href = "/";
-    // }
+    const validateToken = async () => {
+      try {
+        const apiUrl = `${process.env.NEXT_PUBLIC_API_URL}/api/auth/validate`;
+        const response = await axios.get(apiUrl, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            clientUrl: window.location.origin,
+          },
+        });
+
+        const userData = response?.data?.user;
+        if (!userData) {
+          handleInvalidToken();
+          return;
+        }
+
+        setUser(userData);
+        localStorage.setItem("authUser", JSON.stringify(userData));
+      } catch (error) {
+        console.error("Invalid token:", error.response?.data || error.message);
+        handleInvalidToken();
+      }
+    };
+
+    validateToken();
   }, []);
+
   return (
     <div className="min-h-screen flex flex-col justify-center items-center">
-      {token ? (
+      {user ? (
         <>
-          <p>
-            Welcome back!
-          </p>
-          <p>Name : </p>
+          <p>Welcome back!</p>
+          {user?.firstName && user?.lastName && (
+            <p>
+              Name: {user.firstName} {user.lastName}
+            </p>
+          )}
         </>
       ) : (
         <p>Loading user data...</p>
       )}
     </div>
-    );
+  );
 }
 
-export default dashboard;
+export default Dashboard;
