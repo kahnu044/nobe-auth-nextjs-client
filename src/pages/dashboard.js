@@ -7,7 +7,7 @@ function Dashboard() {
   const [user, setUser] = useState(null);
 
   // Helper function to clear local storage and redirect
-  const handleInvalidToken = () => {
+  const handleLogout = () => {
     localStorage.removeItem("authToken");
     localStorage.removeItem("authUser");
     router.replace("/");
@@ -16,7 +16,7 @@ function Dashboard() {
   useEffect(() => {
     const token = localStorage.getItem("authToken");
     if (!token) {
-      handleInvalidToken();
+      handleLogout();
       return;
     }
 
@@ -32,7 +32,7 @@ function Dashboard() {
 
         const userData = response?.data?.user;
         if (!userData) {
-          handleInvalidToken();
+          handleLogout();
           return;
         }
 
@@ -40,7 +40,7 @@ function Dashboard() {
         localStorage.setItem("authUser", JSON.stringify(userData));
       } catch (error) {
         console.error("Invalid token:", error.response?.data || error.message);
-        handleInvalidToken();
+        handleLogout();
       }
     };
 
@@ -53,9 +53,17 @@ function Dashboard() {
         <>
           <p>Welcome back!</p>
           {user?.firstName && user?.lastName && (
-            <p>
-              Name: {user.firstName} {user.lastName}
-            </p>
+            <>
+              <p>
+                Name: {user.firstName} {user.lastName}
+              </p>
+              <button
+                onClick={handleLogout}
+                className="bg-red-500 text-light px-4 py-2 mt-4 rounded-md font-bold"
+              >
+                Logout
+              </button>
+            </>
           )}
         </>
       ) : (
