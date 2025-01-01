@@ -7,32 +7,36 @@ export default function Home() {
   const router = useRouter();
   const [token, setToken] = useState(null);
 
-  useEffect(() => {
-    let authToken;
-
-    // Extract token from URL query parameters
+  // Helper function to retrieve token
+  const getAuthToken = () => {
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.has("token")) {
-      authToken = urlParams.get("token");
+      return urlParams.get("token");
+    }
+    return localStorage.getItem("authToken");
+  };
+
+  useEffect(() => {
+    const authToken = getAuthToken();
+
+    if (authToken) {
       setToken(authToken);
       localStorage.setItem("authToken", authToken);
-      router.push("/dashboard");
-    } else {
-      // check from local storage
-      authToken = localStorage.getItem("authToken");
-      setToken(authToken);
+      if (router.query.token) {
+        router.replace("/dashboard");
+      }
     }
-  }, []);
+  }, [router]);
 
-  const handleLogin = async () => {
+  const handleLogin = () => {
     const clientUrl = window.location.origin;
     window.location.href = `${process.env.NEXT_PUBLIC_API_URL}?clientUrl=${clientUrl}`;
   };
 
-  const handleLogout = async () => {
+  const handleLogout = () => {
     localStorage.removeItem("authToken");
     setToken(null);
-    window.location.href = window.location.href;
+    router.push("/");
   };
 
   return (
